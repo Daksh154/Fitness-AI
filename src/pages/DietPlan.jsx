@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { ArrowLeft, X } from 'lucide-react';
+import { ArrowLeft, X, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const DayMealPlanDialog = ({ day, meals, onClose }) => {
   if (!meals) return null;
-  
+
+  const mealTypes = ['breakfast', 'lunch', 'dinner'];
+  const snacks = meals.snacks || [];
+
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white/10 backdrop-blur-lg rounded-xl border border-white/20 w-full max-w-2xl max-h-[90vh] overflow-auto">
@@ -17,36 +20,69 @@ const DayMealPlanDialog = ({ day, meals, onClose }) => {
             <X size={24} />
           </button>
         </div>
-        
+
         <div className="p-6 space-y-6">
-          {['breakfast', 'lunch', 'dinner', 'snack'].map((mealType) => (
-            <div key={mealType} className="bg-white/5 rounded-lg border border-white/10 p-4">
-              <h4 className="text-lg font-semibold text-purple-400 capitalize mb-3">{mealType}</h4>
-              
-              <div className="mb-3">
-                <p className="text-white text-lg mb-2">{meals[mealType].meal}</p>
+          {mealTypes.map((mealType) => {
+            const meal = meals[mealType];
+            if (!meal) return null;
+
+            return (
+              <div key={mealType} className="bg-white/5 rounded-lg border border-white/10 p-4">
+                <h4 className="text-lg font-semibold text-purple-400 capitalize mb-3">{mealType}</h4>
+                <p className="text-white text-md mb-3">Foods: {meal.foods.join(', ')}</p>
+
+                <div className="grid grid-cols-4 gap-3 mt-4">
+                  <div className="bg-purple-500/20 rounded-lg p-3 text-center">
+                    <p className="text-sm text-purple-300 mb-1">Calories</p>
+                    <p className="text-white font-bold">{meal.calories}</p>
+                  </div>
+                  <div className="bg-blue-500/20 rounded-lg p-3 text-center">
+                    <p className="text-sm text-blue-300 mb-1">Carbs</p>
+                    <p className="text-white font-bold">{meal.macros.carbs}g</p>
+                  </div>
+                  <div className="bg-green-500/20 rounded-lg p-3 text-center">
+                    <p className="text-sm text-green-300 mb-1">Protein</p>
+                    <p className="text-white font-bold">{meal.macros.protein}g</p>
+                  </div>
+                  <div className="bg-yellow-500/20 rounded-lg p-3 text-center">
+                    <p className="text-sm text-yellow-300 mb-1">Fat</p>
+                    <p className="text-white font-bold">{meal.macros.fat}g</p>
+                  </div>
+                </div>
               </div>
-              
-              <div className="grid grid-cols-4 gap-3 mt-4">
-                <div className="bg-purple-500/20 rounded-lg p-3 text-center">
-                  <p className="text-sm text-purple-300 mb-1">Calories</p>
-                  <p className="text-white font-bold">{meals[mealType].calories}</p>
+            );
+          })}
+
+          {/* Snacks Section */}
+          {snacks.length > 0 && (
+            <div className="bg-white/5 rounded-lg border border-white/10 p-4">
+              <h4 className="text-lg font-semibold text-purple-400 capitalize mb-3">Snacks</h4>
+              {snacks.map((snack, index) => (
+                <div key={index} className="mb-6">
+                  <p className="text-white text-md mb-2">Foods: {snack.foods.join(', ')}</p>
+
+                  <div className="grid grid-cols-4 gap-3">
+                    <div className="bg-purple-500/20 rounded-lg p-3 text-center">
+                      <p className="text-sm text-purple-300 mb-1">Calories</p>
+                      <p className="text-white font-bold">{snack.calories}</p>
+                    </div>
+                    <div className="bg-blue-500/20 rounded-lg p-3 text-center">
+                      <p className="text-sm text-blue-300 mb-1">Carbs</p>
+                      <p className="text-white font-bold">{snack.macros.carbs}g</p>
+                    </div>
+                    <div className="bg-green-500/20 rounded-lg p-3 text-center">
+                      <p className="text-sm text-green-300 mb-1">Protein</p>
+                      <p className="text-white font-bold">{snack.macros.protein}g</p>
+                    </div>
+                    <div className="bg-yellow-500/20 rounded-lg p-3 text-center">
+                      <p className="text-sm text-yellow-300 mb-1">Fat</p>
+                      <p className="text-white font-bold">{snack.macros.fat}g</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-blue-500/20 rounded-lg p-3 text-center">
-                  <p className="text-sm text-blue-300 mb-1">Carbs</p>
-                  <p className="text-white font-bold">{meals[mealType].carbs}g</p>
-                </div>
-                <div className="bg-green-500/20 rounded-lg p-3 text-center">
-                  <p className="text-sm text-green-300 mb-1">Protein</p>
-                  <p className="text-white font-bold">{meals[mealType].protein}g</p>
-                </div>
-                <div className="bg-yellow-500/20 rounded-lg p-3 text-center">
-                  <p className="text-sm text-yellow-300 mb-1">Fat</p>
-                  <p className="text-white font-bold">{meals[mealType].fat}g</p>
-                </div>
-              </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>
@@ -60,6 +96,16 @@ const MacroCard = ({ label, value, unit, bgColor, textColor }) => (
   </div>
 );
 
+const InfoTooltip = ({ message }) => (
+  <div className="group relative inline-block ml-2">
+    <Info size={16} className="text-gray-400 cursor-help" />
+    <div className="opacity-0 invisible group-hover:opacity-100 group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 -translate-y-2 bg-black/80 text-white text-xs rounded p-2 w-48 transition-all duration-200 z-10">
+      {message}
+      <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-2 h-2 rotate-45 bg-black/80"></div>
+    </div>
+  </div>
+);
+
 const DayCard = ({ day, meals, onClick }) => (
   <div 
     className="bg-white/5 border border-white/10 rounded-lg p-4 cursor-pointer hover:bg-white/10 transition-all"
@@ -67,10 +113,14 @@ const DayCard = ({ day, meals, onClick }) => (
   >
     <h3 className="text-lg font-semibold text-white mb-3">{day}</h3>
     <div className="space-y-2">
-      {Object.keys(meals).map(meal => (
-        <div key={meal} className="flex justify-between text-sm">
-          <span className="text-gray-400 capitalize">{meal}</span>
-          <span className="text-gray-300 truncate max-w-[70%] text-right">{meals[meal].meal}</span>
+      {Object.entries(meals).map(([mealType, mealData]) => (
+        <div key={mealType} className="flex justify-between text-sm">
+          <span className="text-gray-400 capitalize">{mealType}</span>
+          <span className="text-gray-300 truncate max-w-[70%] text-right">
+            {Array.isArray(mealData?.foods)
+              ? mealData.foods.join(', ')
+              : mealData?.map(s => s.foods.join(', ')).join(' | ')}
+          </span>
         </div>
       ))}
     </div>
@@ -82,6 +132,7 @@ const DayCard = ({ day, meals, onClick }) => (
   </div>
 );
 
+
 const DietPlan = () => {
   const [formData, setFormData] = useState({
     weight: '',
@@ -89,53 +140,73 @@ const DietPlan = () => {
     age: '',
     gender: '',
     activity_level: '',
-    fitness_goal: ''
+    fitness_goal: '',
+    diet_plan: true
   });
   const [plan, setPlan] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedDay, setSelectedDay] = useState(null);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    
-    // Convert string values to numbers
-    const payload = {
-      ...formData,
-      weight: Number(formData.weight),
-      height: Number(formData.height),
-      age: Number(formData.age)
-    };
-    
-    try {
-      const response = await fetch('http://localhost:8000/api/diet', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Server responded with status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      setPlan(data);
-    } catch (err) {
-      setError('Error generating diet plan: ' + err.message);
-      console.error('Error:', err);
-    } finally {
-      setLoading(false);
-    }
+// In the handleSubmit function of the DietPlan component
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError(null);
+  
+  // Convert string values to numbers and ensure all values are valid
+  const payload = {
+    ...formData,
+    weight: Number(formData.weight),
+    height: Number(formData.height),
+    age: Number(formData.age),
+    diet_plan: Boolean(formData.diet_plan) // Ensure boolean type
   };
+  
+  try {
+    console.log("Sending payload:", JSON.stringify(payload)); // Debug log to check payload
+    
+    const response = await fetch('http://localhost:8000/api/diet', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Server responded with status: ${response.status}. Details: ${errorText}`);
+    }
+    
+    const text = await response.text();
+    console.log("Raw response:", text); // Debug log to see raw response
+    
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (parseError) {
+      throw new Error(`Error parsing JSON response: ${parseError.message}. Raw response: ${text.substring(0, 100)}...`);
+    }
+    
+    setPlan(data);
+  } catch (err) {
+    setError('Error generating diet plan: ' + err.message);
+    console.error('Error:', err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleChange = (e) => {
+    const value = e.target.type === 'checkbox' 
+      ? e.target.checked 
+      : e.target.value;
+      
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [e.target.name]: value,
     });
   };
 
@@ -155,7 +226,7 @@ const DietPlan = () => {
         </Link>
         
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-4xl font-bold text-white mb-8">Create Your Diet Plan</h1>
+          <h1 className="text-4xl font-bold text-white mb-8"> Find Nutritional Requirements</h1>
           
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg mb-6">
@@ -251,12 +322,27 @@ const DietPlan = () => {
                 </div>
               </div>
               
+              <div className="mt-6">
+                <label className="inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="diet_plan"
+                    checked={formData.diet_plan}
+                    onChange={handleChange}
+                    className="sr-only peer"
+                  />
+                  <div className="relative w-11 h-6 bg-white/10 rounded-full peer peer-focus:ring-2 peer-focus:ring-purple-500/50 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                  <span className="ms-3 text-sm font-medium text-white">Generate Diet Plan</span>
+                  <InfoTooltip message="Toggle off to get only nutritional metrics without a full meal plan" />
+                </label>
+              </div>
+              
               <button
                 type="submit"
                 disabled={loading}
                 className="mt-6 w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200"
               >
-                {loading ? 'Generating Plan...' : 'Generate Diet Plan'}
+                {loading ? 'Calculating...' : formData.diet_plan ? 'Generate Diet Plan' : 'Calculate Nutrition'}
               </button>
             </div>
           </form>
@@ -264,9 +350,30 @@ const DietPlan = () => {
           {plan && (
             <div className="mt-12 space-y-8">
               <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-                <h2 className="text-2xl font-bold text-white mb-6">Your Nutrition Summary</h2>
+                <h2 className="text-2xl font-bold text-white mb-6">Your Nutrition Metrics</h2>
                 
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  <MacroCard 
+                    label="BMR" 
+                    value={plan.bmr} 
+                    unit=" kcal" 
+                    bgColor="bg-indigo-600/30" 
+                    textColor="text-indigo-300"
+                  />
+                  <MacroCard 
+                    label="TDEE" 
+                    value={plan.tdee} 
+                    unit=" kcal" 
+                    bgColor="bg-violet-600/30" 
+                    textColor="text-violet-300"
+                  />
+                  <MacroCard 
+                    label="BMI" 
+                    value={plan.bmi} 
+                    unit="" 
+                    bgColor="bg-pink-600/30" 
+                    textColor="text-pink-300"
+                  />
                   <MacroCard 
                     label="Daily Calories" 
                     value={plan.daily_calories} 
@@ -274,6 +381,10 @@ const DietPlan = () => {
                     bgColor="bg-purple-600/30" 
                     textColor="text-purple-300"
                   />
+                </div>
+                
+                <h3 className="text-xl font-bold text-white mb-4">Recommended Macros</h3>
+                <div className="grid grid-cols-3 gap-4">
                   <MacroCard 
                     label="Protein" 
                     value={plan.macros.protein} 
@@ -298,21 +409,23 @@ const DietPlan = () => {
                 </div>
               </div>
               
-              <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-                <h2 className="text-2xl font-bold text-white mb-6">Weekly Meal Plan</h2>
-                <p className="text-gray-300 mb-6">Click on a day to view the detailed meal plan:</p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {Object.entries(plan.plan).map(([day, meals]) => (
-                    <DayCard 
-                      key={day} 
-                      day={day} 
-                      meals={meals} 
-                      onClick={openDayPlan}
-                    />
-                  ))}
+              {plan.plan && (
+                <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                  <h2 className="text-2xl font-bold text-white mb-6">Weekly Meal Plan</h2>
+                  <p className="text-gray-300 mb-6">Click on a day to view the detailed meal plan:</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {Object.entries(plan.plan).map(([day, meals]) => (
+                      <DayCard 
+                        key={day} 
+                        day={day} 
+                        meals={meals} 
+                        onClick={openDayPlan}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
         </div>

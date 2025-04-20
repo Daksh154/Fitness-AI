@@ -20,7 +20,7 @@ const LandingPage = () => {
               <div className="p-4 rounded-full bg-purple-500/20 group-hover:bg-purple-500/30">
                 <Dumbbell size={48} className="text-white" />
               </div>
-              <h2 className="text-2xl font-semibold text-white">Workout Plan</h2>
+              <h2 className="text-2xl font-semibold text-white">Workout</h2>
               <p className="text-gray-300">
                 Get a personalized workout plan based on your fitness goals
               </p>
@@ -37,7 +37,7 @@ const LandingPage = () => {
               <div className="p-4 rounded-full bg-purple-500/20 group-hover:bg-purple-500/30">
                 <Utensils size={48} className="text-white" />
               </div>
-              <h2 className="text-2xl font-semibold text-white">Diet Plan</h2>
+              <h2 className="text-2xl font-semibold text-white">Diet</h2>
               <p className="text-gray-300">
                 Receive a customized diet plan to achieve your goals
               </p>
