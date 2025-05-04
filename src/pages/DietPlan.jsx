@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, X, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -114,14 +114,16 @@ const DayCard = ({ day, meals, onClick }) => (
     <h3 className="text-lg font-semibold text-white mb-3">{day}</h3>
     <div className="space-y-2">
       {Object.entries(meals).map(([mealType, mealData]) => (
-        <div key={mealType} className="flex justify-between text-sm">
-          <span className="text-gray-400 capitalize">{mealType}</span>
-          <span className="text-gray-300 truncate max-w-[70%] text-right">
-            {Array.isArray(mealData?.foods)
-              ? mealData.foods.join(', ')
-              : mealData?.map(s => s.foods.join(', ')).join(' | ')}
-          </span>
-        </div>
+        mealType !== 'snacks' && mealData ? (
+          <div key={mealType} className="flex justify-between text-sm">
+            <span className="text-gray-400 capitalize">{mealType}</span>
+            <span className="text-gray-300 truncate max-w-[70%] text-right">
+              {Array.isArray(mealData?.foods)
+                ? mealData.foods.join(', ')
+                : mealData?.map(s => s.foods.join(', ')).join(' | ')}
+            </span>
+          </div>
+        ) : null
       ))}
     </div>
     <div className="mt-4 text-center">
@@ -131,7 +133,6 @@ const DayCard = ({ day, meals, onClick }) => (
     </div>
   </div>
 );
-
 
 const DietPlan = () => {
   const [formData, setFormData] = useState({
@@ -147,66 +148,110 @@ const DietPlan = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedDay, setSelectedDay] = useState(null);
-
-// In the handleSubmit function of the DietPlan component
-
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setError(null);
+  const apiUrl='http://localhost:8000/api/diet' ;
+  const [authToken, setAuthToken] = useState('');
   
-  // Convert string values to numbers and ensure all values are valid
-  const payload = {
-    ...formData,
-    weight: Number(formData.weight),
-    height: Number(formData.height),
-    age: Number(formData.age),
-    diet_plan: Boolean(formData.diet_plan) // Ensure boolean type
-  };
-  
-  try {
-    console.log("Sending payload:", JSON.stringify(payload)); // Debug log to check payload
-    
-    const response = await fetch('http://localhost:8000/api/diet', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Server responded with status: ${response.status}. Details: ${errorText}`);
+  // Load auth token on component mount
+  useEffect(() => {
+    const token = localStorage.getItem('token');  
+    if (token) {
+      setAuthToken(token);
     }
     
-    const text = await response.text();
-    console.log("Raw response:", text); // Debug log to see raw response
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
     
-    let data;
+    // Validate form fields
+    const requiredFields = ['weight', 'height', 'age', 'gender', 'activity_level', 'fitness_goal'];
+    const missingFields = requiredFields.filter(field => !formData[field]);
+    
+    if (missingFields.length > 0) {
+      setError(`Please fill in all required fields: ${missingFields.join(', ')}`);
+      setLoading(false);
+      return;
+    }
+    
+    // Convert string values to numbers and ensure all values are valid
+    const payload = {
+      ...formData,
+      weight: Number(formData.weight),
+      height: Number(formData.height),
+      age: Number(formData.age),
+      diet_plan: Boolean(formData.diet_plan)
+    };
+    
     try {
-      data = JSON.parse(text);
-    } catch (parseError) {
-      throw new Error(`Error parsing JSON response: ${parseError.message}. Raw response: ${text.substring(0, 100)}...`);
+      console.log("Sending payload:", JSON.stringify(payload));
+      
+      // Get the authentication token
+      const token = authToken || localStorage.getItem('authToken');
+      
+      if (!token) {
+        throw new Error('Authentication token not found. Please log in again.');
+      }
+      
+      // Make the API call
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload),
+        // Add credentials if your API is on the same domain
+        credentials: 'include'
+      });
+      
+      // Check for HTTP errors
+      if (!response.ok) {
+        let errorMessage = `Server error: ${response.status}`;
+        
+        try {
+          // Try to parse error response
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch (parseError) {
+          // If we can't parse JSON, get raw text
+          const errorText = await response.text();
+          errorMessage = errorText || errorMessage;
+        }
+        
+        throw new Error(errorMessage);
+      }
+      
+      // Safely parse JSON response
+      const responseText = await response.text();
+      console.log("Raw API response:", responseText);
+      
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error("Failed to parse JSON:", parseError);
+        throw new Error(`Error parsing response: ${parseError.message}`);
+      }
+      
+      console.log("Parsed data:", data);
+      setPlan(data);
+    } catch (err) {
+      console.error("API call failed:", err);
+      setError(`Failed to generate diet plan: ${err.message}`);
+    } finally {
+      setLoading(false);
     }
-    
-    setPlan(data);
-  } catch (err) {
-    setError('Error generating diet plan: ' + err.message);
-    console.error('Error:', err);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleChange = (e) => {
-    const value = e.target.type === 'checkbox' 
-      ? e.target.checked 
-      : e.target.value;
+    const { name, type, value, checked } = e.target;
+    const newValue = type === 'checkbox' ? checked : value;
       
     setFormData({
       ...formData,
-      [e.target.name]: value,
+      [name]: newValue,
     });
   };
 
@@ -221,12 +266,12 @@ const handleSubmit = async (e) => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-purple-950 text-white">
       <div className="container mx-auto px-4 py-8">
-        <Link to="/" className="inline-flex items-center text-white hover:text-purple-400 mb-8">
+        <Link to="/home" className="inline-flex items-center text-white hover:text-purple-400 mb-8">
           <ArrowLeft className="mr-2" /> Back to Home
         </Link>
         
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-4xl font-bold text-white mb-8"> Find Nutritional Requirements</h1>
+          <h1 className="text-4xl font-bold text-white mb-8">Find Nutritional Requirements</h1>
           
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg mb-6">
