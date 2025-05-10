@@ -148,18 +148,8 @@ const DietPlan = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedDay, setSelectedDay] = useState(null);
-  const apiUrl='http://localhost:8000/api/diet' ;
-  const [authToken, setAuthToken] = useState('');
+  const apiUrl = 'http://localhost:8000/api/diet';
   
-  // Load auth token on component mount
-  useEffect(() => {
-    const token = localStorage.getItem('token');  
-    if (token) {
-      setAuthToken(token);
-    }
-    
-  }, []);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -175,26 +165,26 @@ const DietPlan = () => {
       return;
     }
     
-    // Convert string values to numbers and ensure all values are valid
+    // Prepare the payload with correct data types
     const payload = {
       ...formData,
-      weight: Number(formData.weight),
-      height: Number(formData.height),
-      age: Number(formData.age),
+      weight: parseFloat(formData.weight),
+      height: parseFloat(formData.height),
+      age: parseInt(formData.age, 10),
       diet_plan: Boolean(formData.diet_plan)
     };
     
     try {
       console.log("Sending payload:", JSON.stringify(payload));
       
-      // Get the authentication token
-      const token = authToken || localStorage.getItem('authToken');
+      // Get token from localStorage
+      const token = localStorage.getItem('token');
       
       if (!token) {
         throw new Error('Authentication token not found. Please log in again.');
       }
       
-      // Make the API call
+      // Make the API call - simplified to match the working version
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
@@ -202,39 +192,14 @@ const DietPlan = () => {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(payload),
-        // Add credentials if your API is on the same domain
-        credentials: 'include'
       });
       
-      // Check for HTTP errors
       if (!response.ok) {
-        let errorMessage = `Server error: ${response.status}`;
-        
-        try {
-          // Try to parse error response
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorData.error || errorMessage;
-        } catch (parseError) {
-          // If we can't parse JSON, get raw text
-          const errorText = await response.text();
-          errorMessage = errorText || errorMessage;
-        }
-        
-        throw new Error(errorMessage);
+        const errorData = await response.json();
+        throw new Error(errorData.details || `Server responded with status: ${response.status}`);
       }
       
-      // Safely parse JSON response
-      const responseText = await response.text();
-      console.log("Raw API response:", responseText);
-      
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error("Failed to parse JSON:", parseError);
-        throw new Error(`Error parsing response: ${parseError.message}`);
-      }
-      
+      const data = await response.json();
       console.log("Parsed data:", data);
       setPlan(data);
     } catch (err) {
