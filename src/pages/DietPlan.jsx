@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, X, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { DietHistoryAccordion, HistoricDietPlanDetail } from './DietHistory';
 
 const DayMealPlanDialog = ({ day, meals, onClose }) => {
   if (!meals) return null;
@@ -148,6 +149,7 @@ const DietPlan = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedDay, setSelectedDay] = useState(null);
+  const [selectedHistoryPlan, setSelectedHistoryPlan] = useState(null);
   const apiUrl = 'http://localhost:8000/api/diet';
   
   const handleSubmit = async (e) => {
@@ -184,7 +186,7 @@ const DietPlan = () => {
         throw new Error('Authentication token not found. Please log in again.');
       }
       
-      // Make the API call - simplified to match the working version
+      // Make the API call
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
@@ -200,23 +202,23 @@ const DietPlan = () => {
       }
       
       const data = await response.json();
-      console.log("Parsed data:", data);
+      console.log("Response data:", data);
+      
+      // Update state with the received plan
       setPlan(data);
+      setLoading(false);
     } catch (err) {
-      console.error("API call failed:", err);
-      setError(`Failed to generate diet plan: ${err.message}`);
-    } finally {
+      console.error("Error:", err);
+      setError(err.message);
       setLoading(false);
     }
   };
 
-  const handleChange = (e) => {
-    const { name, type, value, checked } = e.target;
-    const newValue = type === 'checkbox' ? checked : value;
-      
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: newValue,
+      [name]: value
     });
   };
 
@@ -228,226 +230,284 @@ const DietPlan = () => {
     setSelectedDay(null);
   };
 
+  const handleHistoryPlanSelect = (planId) => {
+    setSelectedHistoryPlan(planId);
+  };
+
+  const handleBackFromHistory = () => {
+    setSelectedHistoryPlan(null);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-purple-950 text-white">
-      <div className="container mx-auto px-4 py-8">
-        <Link to="/home" className="inline-flex items-center text-white hover:text-purple-400 mb-8">
-          <ArrowLeft className="mr-2" /> Back to Home
+    <div className="min-h-screen bg-gradient-to-b from-purple-900 to-indigo-900 text-white p-4 md:p-8">
+      <div className="max-w-6xl mx-auto">
+        <Link to="/home" className="flex items-center text-purple-300 hover:text-white mb-8 group">
+          <ArrowLeft className="mr-2 group-hover:-translate-x-1 transition-transform" size={20} />
+          <span>Back to Home</span>
         </Link>
         
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-4xl font-bold text-white mb-8">Find Nutritional Requirements</h1>
-          
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg mb-6">
-              {error}
-            </div>
-          )}
-          
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-white mb-2">Weight (kg)</label>
-                  <input
-                    type="number"
-                    name="weight"
-                    value={formData.weight}
-                    onChange={handleChange}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-500"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-white mb-2">Height (cm)</label>
-                  <input
-                    type="number"
-                    name="height"
-                    value={formData.height}
-                    onChange={handleChange}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-500"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-white mb-2">Age</label>
-                  <input
-                    type="number"
-                    name="age"
-                    value={formData.age}
-                    onChange={handleChange}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-500"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-white mb-2">Gender</label>
-                  <select
-                    name="gender"
-                    value={formData.gender}
-                    onChange={handleChange}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-500"
-                    required
-                  >
-                    <option value="">Select Gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-white mb-2">Activity Level</label>
-                  <select
-                    name="activity_level"
-                    value={formData.activity_level}
-                    onChange={handleChange}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-500"
-                    required
-                  >
-                    <option value="">Select Activity Level</option>
-                    <option value="sedentary">Sedentary</option>
-                    <option value="light">Light Activity</option>
-                    <option value="moderate">Moderate Activity</option>
-                    <option value="active">Very Active</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-white mb-2">Fitness Goal</label>
-                  <select
-                    name="fitness_goal"
-                    value={formData.fitness_goal}
-                    onChange={handleChange}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-500"
-                    required
-                  >
-                    <option value="">Select Goal</option>
-                    <option value="weight_loss">Weight Loss</option>
-                    <option value="muscle_gain">Muscle Gain</option>
-                    <option value="maintenance">Maintenance</option>
-                  </select>
-                </div>
-              </div>
-              
-              <div className="mt-6">
-                <label className="inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="diet_plan"
-                    checked={formData.diet_plan}
-                    onChange={handleChange}
-                    className="sr-only peer"
-                  />
-                  <div className="relative w-11 h-6 bg-white/10 rounded-full peer peer-focus:ring-2 peer-focus:ring-purple-500/50 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
-                  <span className="ms-3 text-sm font-medium text-white">Generate Diet Plan</span>
-                  <InfoTooltip message="Toggle off to get only nutritional metrics without a full meal plan" />
-                </label>
-              </div>
-              
-              <button
-                type="submit"
-                disabled={loading}
-                className="mt-6 w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200"
-              >
-                {loading ? 'Calculating...' : formData.diet_plan ? 'Generate Diet Plan' : 'Calculate Nutrition'}
-              </button>
-            </div>
-          </form>
+        <h1 className="text-4xl font-bold mb-8">Diet Plan Generator</h1>
 
-          {plan && (
-            <div className="mt-12 space-y-8">
-              <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-                <h2 className="text-2xl font-bold text-white mb-6">Your Nutrition Metrics</h2>
-                
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                  <MacroCard 
-                    label="BMR" 
-                    value={plan.bmr} 
-                    unit=" kcal" 
-                    bgColor="bg-indigo-600/30" 
-                    textColor="text-indigo-300"
-                  />
-                  <MacroCard 
-                    label="TDEE" 
-                    value={plan.tdee} 
-                    unit=" kcal" 
-                    bgColor="bg-violet-600/30" 
-                    textColor="text-violet-300"
-                  />
-                  <MacroCard 
-                    label="BMI" 
-                    value={plan.bmi} 
-                    unit="" 
-                    bgColor="bg-pink-600/30" 
-                    textColor="text-pink-300"
-                  />
-                  <MacroCard 
-                    label="Daily Calories" 
-                    value={plan.daily_calories} 
-                    unit=" kcal" 
-                    bgColor="bg-purple-600/30" 
-                    textColor="text-purple-300"
-                  />
-                </div>
-                
-                <h3 className="text-xl font-bold text-white mb-4">Recommended Macros</h3>
-                <div className="grid grid-cols-3 gap-4">
-                  <MacroCard 
-                    label="Protein" 
-                    value={plan.macros.protein} 
-                    unit="g" 
-                    bgColor="bg-green-500/30" 
-                    textColor="text-green-300"
-                  />
-                  <MacroCard 
-                    label="Carbs" 
-                    value={plan.macros.carbs} 
-                    unit="g" 
-                    bgColor="bg-blue-500/30" 
-                    textColor="text-blue-300"
-                  />
-                  <MacroCard 
-                    label="Fat" 
-                    value={plan.macros.fat} 
-                    unit="g" 
-                    bgColor="bg-yellow-500/30" 
-                    textColor="text-yellow-300"
-                  />
-                </div>
-              </div>
+        {/* Show Diet History Accordion when not viewing a specific plan */}
+        {!selectedHistoryPlan && (
+          <DietHistoryAccordion onSelectPlan={handleHistoryPlanSelect} />
+        )}
+
+        {/* Show Historic Diet Plan Detail when a specific plan is selected */}
+        {selectedHistoryPlan ? (
+          <HistoricDietPlanDetail planId={selectedHistoryPlan} onBack={handleBackFromHistory} />
+        ) : (
+          <>
+            {/* Form for new diet plan */}
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20 mb-8">
+              <h2 className="text-2xl font-bold mb-6">Create New Diet Plan</h2>
               
-              {plan.plan && (
-                <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-                  <h2 className="text-2xl font-bold text-white mb-6">Weekly Meal Plan</h2>
-                  <p className="text-gray-300 mb-6">Click on a day to view the detailed meal plan:</p>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {Object.entries(plan.plan).map(([day, meals]) => (
-                      <DayCard 
-                        key={day} 
-                        day={day} 
-                        meals={meals} 
-                        onClick={openDayPlan}
-                      />
-                    ))}
-                  </div>
+              {error && (
+                <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg mb-6">
+                  {error}
                 </div>
               )}
+              
+              <form onSubmit={handleSubmit}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label className="block text-purple-300 mb-2">
+                      Weight (kg)
+                      <InfoTooltip message="Your current weight in kilograms" />
+                    </label>
+                    <input
+                      type="number"
+                      name="weight"
+                      value={formData.weight}
+                      onChange={handleInputChange}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="Enter your weight"
+                      step="0.1"
+                      min="30"
+                      max="250"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-purple-300 mb-2">
+                      Height (cm)
+                      <InfoTooltip message="Your height in centimeters" />
+                    </label>
+                    <input
+                      type="number"
+                      name="height"
+                      value={formData.height}
+                      onChange={handleInputChange}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="Enter your height"
+                      step="0.1"
+                      min="100"
+                      max="250"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-purple-300 mb-2">
+                      Age
+                      <InfoTooltip message="Your age in years" />
+                    </label>
+                    <input
+                      type="number"
+                      name="age"
+                      value={formData.age}
+                      onChange={handleInputChange}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="Enter your age"
+                      min="16"
+                      max="100"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-purple-300 mb-2">Gender</label>
+                    <select
+                      name="gender"
+                      value={formData.gender}
+                      onChange={handleInputChange}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="">Select gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-purple-300 mb-2">
+                      Activity Level
+                      <InfoTooltip message="How active are you on a daily basis?" />
+                    </label>
+                    <select
+                      name="activity_level"
+                      value={formData.activity_level}
+                      onChange={handleInputChange}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="">Select activity level</option>
+                      <option value="sedentary">Sedentary (little or no exercise)</option>
+                      <option value="light">Light (light exercise 1-3 days/week)</option>
+                      <option value="moderate">Moderate (moderate exercise 3-5 days/week)</option>
+                      <option value="active">Active (hard exercise 6-7 days/week)</option>
+                      <option value="very_active">Very Active (very hard exercise & physical job)</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-purple-300 mb-2">
+                      Fitness Goal
+                      <InfoTooltip message="What is your primary fitness goal?" />
+                    </label>
+                    <select
+                      name="fitness_goal"
+                      value={formData.fitness_goal}
+                      onChange={handleInputChange}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="">Select fitness goal</option>
+                      <option value="weight_loss">Weight Loss</option>
+                      <option value="maintenance">Maintenance</option>
+                      <option value="muscle_gain">Muscle Gain</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div className="flex items-center mb-6">
+                  <input
+                    type="checkbox"
+                    id="diet_plan"
+                    name="diet_plan"
+                    checked={formData.diet_plan}
+                    onChange={(e) => setFormData({...formData, diet_plan: e.target.checked})}
+                    className="mr-2 h-5 w-5"
+                  />
+                  <label htmlFor="diet_plan" className="text-purple-300">
+                    Generate weekly meal plan
+                    <InfoTooltip message="Uncheck if you only want nutrition recommendations without meal plans" />
+                  </label>
+                </div>
+                
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 w-full md:w-auto"
+                >
+                  {loading ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
+                      <span>Generating Plan...</span>
+                    </div>
+                  ) : (
+                    'Generate Diet Plan'
+                  )}
+                </button>
+              </form>
             </div>
-          )}
-        </div>
-        
-        {selectedDay && (
-          <DayMealPlanDialog 
-            day={selectedDay.day} 
-            meals={selectedDay.meals} 
-            onClose={closeDayPlan} 
-          />
+            
+            {/* Generated Diet Plan Results */}
+            {plan && !loading && (
+              <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
+                <h2 className="text-2xl font-bold mb-6">Your Custom Diet Plan</h2>
+                
+                <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 mb-6">
+                  <h3 className="text-xl font-bold mb-4">Nutrition Metrics</h3>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <MacroCard 
+                      label="BMR" 
+                      value={plan.bmr} 
+                      unit=" kcal" 
+                      bgColor="bg-indigo-600/30" 
+                      textColor="text-indigo-300" 
+                    />
+                    <MacroCard 
+                      label="TDEE" 
+                      value={plan.tdee} 
+                      unit=" kcal" 
+                      bgColor="bg-violet-600/30" 
+                      textColor="text-violet-300" 
+                    />
+                    <MacroCard 
+                      label="BMI" 
+                      value={plan.bmi.toFixed(1)} 
+                      unit="" 
+                      bgColor="bg-pink-600/30" 
+                      textColor="text-pink-300" 
+                    />
+                    <MacroCard 
+                      label="Daily Calories" 
+                      value={plan.daily_calories} 
+                      unit=" kcal" 
+                      bgColor="bg-purple-600/30" 
+                      textColor="text-purple-300" 
+                    />
+                  </div>
+                  
+                  {plan.macros && (
+                    <div className="mt-6">
+                      <h3 className="text-lg font-bold mb-3">Recommended Macros</h3>
+                      <div className="grid grid-cols-3 gap-4">
+                        <MacroCard 
+                          label="Protein" 
+                          value={plan.macros.protein} 
+                          unit="g" 
+                          bgColor="bg-green-500/30" 
+                          textColor="text-green-300" 
+                        />
+                        <MacroCard 
+                          label="Carbs" 
+                          value={plan.macros.carbs} 
+                          unit="g" 
+                          bgColor="bg-blue-500/30" 
+                          textColor="text-blue-300" 
+                        />
+                        <MacroCard 
+                          label="Fat" 
+                          value={plan.macros.fat} 
+                          unit="g" 
+                          bgColor="bg-yellow-500/30" 
+                          textColor="text-yellow-300" 
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {plan.plan && (
+                  <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                    <h3 className="text-xl font-bold mb-4">Weekly Meal Plan</h3>
+                    <p className="text-gray-300 mb-6">Click on a day to view the detailed meal plan:</p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {Object.entries(plan.plan).map(([day, meals]) => (
+                        <DayCard 
+                          key={day} 
+                          day={day} 
+                          meals={meals} 
+                          onClick={openDayPlan} 
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
+      
+      {/* Day Meal Plan Dialog */}
+      {selectedDay && (
+        <DayMealPlanDialog 
+          day={selectedDay.day} 
+          meals={selectedDay.meals} 
+          onClose={closeDayPlan} 
+        />
+      )}
     </div>
   );
 };
