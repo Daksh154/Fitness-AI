@@ -5,6 +5,8 @@ import WorkoutPlan from './pages/WorkoutPlan';
 import DietPlan from './pages/DietPlan';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import ProgressPage from './pages/ProgressPage';
+
 function App() {
   return (
     <BrowserRouter>
@@ -15,6 +17,7 @@ function App() {
           <Route path="/home" element={<LandingPage />} />
           <Route path="/workout" element={<WorkoutPlan />} />
           <Route path="/diet" element={<DietPlan />} />
+          <Route path="/progress" element={<ProgressPage />} />
         </Routes>
       </div>
     </BrowserRouter>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Dumbbell, Utensils, User, LogOut } from "lucide-react";
+import { Dumbbell, Utensils, User, LogOut, LineChart } from "lucide-react";
 import axios from "axios";
 import UserProfileDialog from "./UserProfileDialog";
 
@@ -122,7 +122,7 @@ const LandingPage = () => {
             : "Transform Your Life"}
         </h1>
 
-        <div className="grid md:grid-cols-2 gap-8 w-full max-w-4xl">
+        <div className="grid md:grid-cols-3 gap-8 w-full max-w-6xl">
           <div
             onClick={() => navigate("/workout")}
             className="group cursor-pointer transform transition-all duration-300 hover:scale-105"
@@ -152,6 +152,23 @@ const LandingPage = () => {
                 <h2 className="text-2xl font-semibold text-white">Diet</h2>
                 <p className="text-gray-300">
                   Receive a customized diet plan to achieve your goals
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div
+            onClick={() => navigate("/progress")}
+            className="group cursor-pointer transform transition-all duration-300 hover:scale-105"
+          >
+            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 hover:border-purple-500/50 shadow-xl hover:shadow-purple-500/20">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="p-4 rounded-full bg-purple-500/20 group-hover:bg-purple-500/30">
+                  <LineChart size={48} className="text-white" />
+                </div>
+                <h2 className="text-2xl font-semibold text-white">Track Progress</h2>
+                <p className="text-gray-300">
+                  Monitor your fitness journey with detailed progress tracking
                 </p>
               </div>
             </div>
