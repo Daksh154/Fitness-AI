@@ -3,6 +3,7 @@ import axios from "axios";
 import { Line } from "react-chartjs-2";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import config from "../config";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -39,7 +40,7 @@ const ProgressPage = () => {
     if (!token) return;
 
     try {
-      const response = await axios.get("http://localhost:8000/api/progress", {
+      const response = await axios.get(`${config.apiUrl}/api/progress`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -63,7 +64,7 @@ const ProgressPage = () => {
 
     try {
       await axios.post(
-        "http://localhost:8000/api/progress",
+        `${config.apiUrl}/api/progress`,
         formData,
         {
           headers: {

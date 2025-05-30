@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dumbbell, Utensils, User, LogOut, LineChart } from "lucide-react";
 import axios from "axios";
+import config from "../config";
 import UserProfileDialog from "./UserProfileDialog";
 
 const LandingPage = () => {
@@ -20,7 +21,7 @@ const LandingPage = () => {
 
       try {
         const response = await axios.get(
-          "http://localhost:8000/api/user/profile",
+          `${config.apiUrl}/api/user/profile`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -45,7 +46,7 @@ const LandingPage = () => {
     if (token) {
       try {
         await axios.post(
-          "http://localhost:8000/api/auth/logout",
+          `${config.apiUrl}/api/auth/logout`,
           {},
           {
             headers: {

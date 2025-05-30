@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, ChevronUp, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
+import config from "../config";
 import {
   WorkoutHistory,
   WorkoutForm,
@@ -28,7 +29,7 @@ const WorkoutPlan = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/api/workout/${planId}`,
+        `${config.apiUrl}/api/workout/${planId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -68,7 +69,7 @@ const WorkoutPlan = () => {
     };
 
     try {
-      const response = await fetch("http://localhost:8000/api/workout", {
+      const response = await fetch(`${config.apiUrl}/api/workout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

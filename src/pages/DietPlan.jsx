@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, X, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { DietHistoryAccordion, HistoricDietPlanDetail } from './DietHistory';
+import config from '../config';
 
 const DayMealPlanDialog = ({ day, meals, onClose }) => {
   if (!meals) return null;
@@ -150,7 +151,7 @@ const DietPlan = () => {
   const [error, setError] = useState(null);
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedHistoryPlan, setSelectedHistoryPlan] = useState(null);
-  const apiUrl = 'http://localhost:8000/api/diet';
+  const apiUrl = `${config.apiUrl}/api/diet`;
   
   const handleSubmit = async (e) => {
     e.preventDefault();

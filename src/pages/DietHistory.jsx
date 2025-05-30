@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ChevronDown, ChevronUp, Calendar, Activity } from "lucide-react";
 import { X } from "lucide-react";
+import config from "../config";
 
 // Diet History Accordion Component
 const DietHistoryAccordion = ({ onSelectPlan }) => {
@@ -23,7 +24,7 @@ const DietHistoryAccordion = ({ onSelectPlan }) => {
       }
 
       const response = await fetch(
-        "http://localhost:8000/api/diet/history?limit=5",
+        `${config.apiUrl}/api/diet/history?limit=5`,
         {
           method: "GET",
           headers: {
@@ -164,7 +165,7 @@ const HistoricDietPlanDetail = ({ planId, onBack }) => {
         }
 
         const response = await fetch(
-          `http://localhost:8000/api/diet/${planId}`,
+          `${config.apiUrl}/api/diet/${planId}`,
           {
             method: "GET",
             headers: {

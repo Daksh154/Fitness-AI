@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
 import axios from 'axios';
+import config from '../config';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/login', formData);
+      const response = await axios.post(`${config.apiUrl}/api/auth/login`, formData);
       if (response.data.user) {
         localStorage.setItem('token', response.data.session.access_token);
         console.log("Token stored:", localStorage.getItem('token')); 

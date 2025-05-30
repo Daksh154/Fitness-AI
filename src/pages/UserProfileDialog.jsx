@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { User, X, Save } from 'lucide-react';
+import config from '../config';
 
 const UserProfileDialog = ({ user, onClose, onUpdate }) => {
   const [formData, setFormData] = useState({
@@ -49,7 +50,7 @@ const UserProfileDialog = ({ user, onClose, onUpdate }) => {
 
     try {
       const response = await axios.post(
-        'http://localhost:8000/api/user/profile',
+        `${config.apiUrl}/api/user/profile`,
         formData,
         {
           headers: {

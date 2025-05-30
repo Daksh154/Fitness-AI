@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
 import axios from 'axios';
+import config from '../config';
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -25,8 +26,7 @@ const SignUp = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-    //   const response = await axios.post('http://localhost:8000/api/auth/register', formData);
-      const response = await axios.post('http://localhost:8000/api/auth/register', formData);
+      const response = await axios.post(`${config.apiUrl}/api/auth/register`, formData);
       if (response.data.user) {
         if (response.data.session) {
           localStorage.setItem('token', response.data.session.access_token);

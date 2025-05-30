@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, History, Dumbbell, ChevronDown, ChevronUp, User, Calendar, Plus, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import config from '../config';
 
 // WorkoutHistory Component - Shows previous workout plans
 const WorkoutHistory = ({ onSelectPlan, shouldRefresh }) => {
@@ -16,7 +17,7 @@ const WorkoutHistory = ({ onSelectPlan, shouldRefresh }) => {
   const fetchWorkoutHistory = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/workout/history', {
+      const response = await fetch(`${config.apiUrl}/api/workout/history`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
